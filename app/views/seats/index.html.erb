@@ -4,8 +4,8 @@
   <% @seats.order(:id).each_slice(20) do |row| %>
     <div style="display: flex;">
       <% row.each do |seat| %>
-        <div style="cursor: pointer; margin: 5px; width: 30px; height: 30px; border-radius: 50%; background-color: <%= seat_color(seat) %>; display: flex; align-items: center; justify-content: center;" onclick="selectSeat(<%= seat.id %>)">
-          <p style="text-align: center;"><%= seat.id %></p>
+        <div id="circle-<%= seat.id%>" style="cursor: pointer; margin: 5px; width: 30px; height: 30px; border-radius: 50%; background-color: <%= seat_color(seat) %>; display: flex; align-items: center; justify-content: center;" onclick="selectSeat(<%= seat.id %>)">
+          <p id="circle-value-<%= seat.id%>" style="text-align: center;"><%= seat.id %></p>
         </div>
       <% end %>
     </div>
@@ -15,10 +15,11 @@
 <form id="seat-selection-form" action="" method="post" style="display: none;">
   <input type="hidden" name="_method" value="put">
   <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+  <input type="hidden" id="room-id" data-room-id="<%= Room.first.id %>" />
 </form>
 
 <div>
-  <% if @seats.any? { |seat| seat.status == 'selecionado' } %>
+  <% if Room.first.seats.any? { |seat| seat.status == 'selecionado' } %>
     <%= button_to 'Reservar', reserve_seats_path, method: :put, remote: true %>
   <% end %>
 </div>

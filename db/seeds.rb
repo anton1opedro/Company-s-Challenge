@@ -12,12 +12,14 @@
 
 rows = 25
 columns = 20
+room = Room.create(name: "Teatro Diogo Bernardes")
 
 rows.times do |x|
   columns.times do |y|
-    Seat.create(x: x, y: y, status: 0)
+    room.seats.create(x: x, y: y, status: 0)
   end
 end
 
 puts 'Seats created successfully!'
+
 
