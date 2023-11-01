@@ -1,6 +1,5 @@
 # app/controllers/seats_controller.rb
 class SeatsController < ApplicationController
-  # include ActionController::Live
 
   def index
     @seats = Room.first.seats
@@ -18,7 +17,7 @@ class SeatsController < ApplicationController
       end
       session[:selected_seat_id] = @seat.id
     end
-    broadcast_seat_update(@seat)
+    broadcast_seat_update(@seat, session.id)
     redirect_back(fallback_location: seats_path)
   end
 
@@ -29,22 +28,10 @@ class SeatsController < ApplicationController
     else
       @seats = Room.first.seats.where(status: 2)
       @seats.update_all(status: 1)
-      @seats.each { |seat| broadcast_seat_update(seat) }
+      @seats.each { |seat| broadcast_seat_update(seat, session.id) }
       redirect_to root_path
     end
   end
-
-  # def stream
-  #   response.headers['Content-Type'] = 'text/event-stream'
-  #   sse = SSE.new(response.stream)
-  #   loop do
-  #     sse.write({ seats: Seat.all })
-  #     sleep 1
-  #   end
-  # rescue ClientDisconnected
-  # ensure
-  #   response.stream.close
-  # end
 
   private
 
@@ -52,10 +39,9 @@ class SeatsController < ApplicationController
     params.require(:seat).permit(:status)
   end
 
-  def broadcast_seat_update(seat)
-    # ActionCable.server.broadcast("seat_channel", { seat_id: seat.id, status: seat.status })
+  def broadcast_seat_update(seat, session_id)
     room_id = seat.room_id
-    puts "Broadcasting to room_#{room_id}, Seat ID: #{seat.id}, Status: #{seat.status}"
-    ActionCable.server.broadcast("room_#{room_id}", { seat_id: seat.id, status: seat.status })
+    puts "Broadcasting to room_#{room_id}, Session ID: #{session_id}, Seat ID: #{seat.id}, Status: #{seat.status}"
+    ActionCable.server.broadcast("room_#{room_id}", { session_id: { public_id: session_id}, seat_id: seat.id, status: seat.status })
   end
 end
